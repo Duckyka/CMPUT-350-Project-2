@@ -2,6 +2,7 @@
 
 #include <array>
 #include <tuple>
+#include "MathUtil.h"
 
 // An entity can have any component it is templated with,
 // but does not have these installed by default.
