@@ -21,7 +21,8 @@ public:
 template <typename... Components>
 class SystemManager {
 public:
-    bool Run(EngineView<Components...>* scene) {
+    bool Run(EngineView<Components...>* scene)
+    {
         for (auto& system : mSystems) {
             if (system->Run(scene) == kExit)  // system wants to exit
             {

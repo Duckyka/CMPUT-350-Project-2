@@ -13,9 +13,25 @@ Rect WindowManager::GetWindowBounds() const { return Rect(mWindow->getSize().x, 
 
 // NOT DONE YET -------------------------------------------------------------------------------------- NOT DONE YET
 // NOT DONE YET -------------------------------------------------------------------------------------- NOT DONE YET
-void WindowManager::DebugDrawRect(const Rect& r, int red, int green, int blue, int alpha) {}
+void WindowManager::DebugDrawRect(const Rect& r, int red, int green, int blue, int alpha)
+{
+    sf::RectangleShape rect;
+    rect.setSize({r.width, r.height});
+    rect.setFillColor(sf::Color{red, green, blue, alpha});
+    rect.setOutlineColor(sf::Color{1.0, 1.0, 1.0, 0.0});
+    rect.setPosition({r.topLeft.x, r.topLeft.y});
+    mWindow->draw(rect);
+}
 
-void WindowManager::DebugFrameRect(const Rect& r, int red, int green, int blue, int alpha) {}
+void WindowManager::DebugFrameRect(const Rect& r, int red, int green, int blue, int alpha)
+{
+    sf::RectangleShape rect;
+    rect.setSize({r.width, r.height});
+    rect.setFillColor(sf::Color{1.0, 1.0, 1.0, 0.0});
+    rect.setOutlineColor(sf::Color{red, green, blue, alpha});
+    rect.setPosition({r.topLeft.x, r.topLeft.y});
+    mWindow->draw(rect);
+}
 // NOT DONE YET -------------------------------------------------------------------------------------- NOT DONE YET
 // NOT DONE YET -------------------------------------------------------------------------------------- NOT DONE YET
 
