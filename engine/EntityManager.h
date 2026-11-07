@@ -6,6 +6,7 @@
 #include <type_traits>
 #include <tuple>
 #include <vector>
+#include <algorithm>
 
 #include "Component.h"
 #include "Entity.h"
@@ -25,14 +26,16 @@ public:
         // If there is no space in the vector tEntity, add to the end
         if (std::find(mEntityTracker.begin(), mEntityTracker.end(), 0) == this->mEntityTracker.end())
         {
-            mEntities.push_back(name);
-            pos = std::distance(mEntities.begin(), std::find(mEntities.begin(), mEntities.end(), (name)));
+            mEntityNames.push_back(name);
+            pos = std::distance(mEntityNames.begin(), std::find(mEntityNames.begin(), mEntityNames.end(), (name)));
+            mEntities.push_back(Entity(pos, name));
             mEntityTracker.push_back(1);
         }
         else    // Else there is room from a removed entity, reuse the first space available
         {
             pos = std::distance(mEntityTracker.begin(), std::find(mEntityTracker.begin(), mEntityTracker.end(), 0));
-            mEntities.at(pos) = name;
+            mEntityNames.at(pos) = name;
+            mEntities.at(pos) = Entity(pos, name);
             mEntityTracker.at(pos) = 1;
         }
 
@@ -42,28 +45,37 @@ public:
     void RemoveEntity(EntityID entity)
     {
         mEntityTracker.at(entity) = 0;
-        mEntities.at(entity) = kNullComponent;
+        mEntities.at(entity).mID = kNullComponent;
+        mEntityNames.at(entity) = kNullComponent;
     }
 
     template <typename T>
     void AddComponent(EntityID entity, T component)
     {
-
+        assert(mEntityTracker.at(entity) != 0 && !HasComponent<T>(entity)); //Valid Entity
+        std::get<T>(mComponents)->mStorage[entity] = component;
     }
 
     template <typename T>
     void RemoveComponent(EntityID entity)
     {
-
+        assert(mEntityTracker.at(entity) != 0 && HasComponent<T>(entity)); //Valid Entity
+        //std::get<T>(mComponents)[entity]->mFreeList.push_back(entity);
+        std::get<T>(mComponents)->mValid[entity] = 0;
+        std::get<T>(mComponents)->mStorage[entity] = kNullComponent;
     }
 
     template <typename T>
     bool HasComponent(EntityID entity) const
     {
-        if (mEntityTracker.at(entity) != 0)
+        assert(mEntityTracker.at(entity) != 0); //Valid Entity
+        if (std::get<T>(mComponents)->mStorage[entity] != kNullComponent)
         {
-            //if (mComponents)
-            return true;
+            if (std::get<T>(mComponents)->mValid[entity] != 0)
+            {
+                return true;
+            }
+            else { return false; }
         }
         else
         {
@@ -74,20 +86,22 @@ public:
     template <typename T>
     T& GetComponent(EntityID entity) {
         // Re-write code
-        static T dummy;
-        return dummy;
+        assert(HasComponent<T>(entity));
+        static T component = std::get<T>(mComponents)->mStorage[entity];
+        return component;
     }
 
     template <typename T>
     ComponentStorage<T>& GetComponentStorage() {
         // Re-write code
-        static ComponentStorage<T> dummy;
-        return dummy;
+        static ComponentStorage<T> componentStorage = std::get<ComponentStorage<T>>(mComponents);
+        return componentStorage;
     }
 
 private:
-    std::tuple<std::vector<ComponentTypes>...> mComponents;
-    std::vector<std::string> mEntities;
+    std::tuple<ComponentStorage<Components>...> mComponents;
+    std::vector<Entity> mEntities;
+    std::vector<std::string>mEntityNames;
     std::vector<bool> mEntityTracker;
 
     using tEntity = std::vector<Entity>;

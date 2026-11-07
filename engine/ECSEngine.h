@@ -23,6 +23,7 @@ namespace ECSEngine {
 template <typename... Components>
 class EngineView {
 public:
+    virtual ~EngineView() = default;
     virtual SoundManager& GetSoundManager() = 0;
     virtual SpriteManager& GetSpriteManager() = 0;
     virtual EntityManager<Components...>& GetEntityManager() = 0;
@@ -38,13 +39,9 @@ public:
     void Run();
 
     SoundManager& GetSoundManager() override { return mSoundManager; }
-
     SpriteManager& GetSpriteManager() override { return mSpriteManager; }
-
     EntityManager<Components...>& GetEntityManager() override { return mEntityManager; }
-
     WindowManager& GetWindowManager() override { return mWindowManager; }
-
     SystemManager<Components...>& GetSystemManager() { return mSystemManager; }
 
 private:
@@ -65,16 +62,98 @@ private:
 template <typename... Components>
 ECSEngine<Components...>::ECSEngine(unsigned int width, unsigned int height,
                                     const std::string& name)
-    : mWindowManager(width, height, name) {}
+    : mWindowManager(width, height, name), running(true), step(false), debug(0) {}
 
 template <typename... Components>
 ECSEngine<Components...>::~ECSEngine() {}
 
 template <typename... Components>
-void ECSEngine<Components...>::Run() {}
+void ECSEngine<Components...>::Run()
+{
+    while (mWindowManager.GetWindow()->isOpen() && running)
+    {
+        if (!ProcessEvents())
+        {
+            break;
+        }
+
+        if (!step)
+        {
+            mSystemManager.Run(this);
+        }
+
+        mWindowManager.GetWindow()->clear();
+
+        if (debug != 0)
+        {
+            DebugDraw();
+        }
+
+        mWindowManager.GetWindow()->display();
+    }
+}
 
 template <typename... Components>
 bool ECSEngine<Components...>::ProcessEvents() {
+    while(const std::optional<sf::Event> event = mWindowManager.GetWindow()->pollEvent())
+    {
+        if (event->is<sf::Event::Closed>())
+        {
+            mWindowManager.GetWindow()->close();
+            return false;
+        }
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::F3))
+        {
+            if (debug == 0) { debug = 1; }
+            else { debug = 0; }
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::F4))
+        {
+            step = !step;
+        }
+
+        if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+        {
+            auto& componentStorage = mEntityManager.template GetComponentStorage<InputComponent>();
+            for (int i = 0; i < componentStorage.mStorage.size(); i++)
+            {
+                if (componentStorage.mValid[i] != 0)
+                {
+                    auto storage = componentStorage.mStorage[i];
+                    storage.lastKeydown = storage.keydown;
+                    if (event->is<sf::Event::KeyPressed>())
+                    {
+                        storage.keydown.set((size_t)keyPressed->scancode, true);
+                    }
+                    else if (event->is<sf::Event::KeyReleased>())
+                    {
+                        storage.keydown.set((size_t)keyPressed->scancode, false);
+                    }
+                }
+            }
+        }
+        else if (const auto* keyReleased = event->getIf<sf::Event::KeyReleased>())
+        {
+            auto& componentStorage = mEntityManager.template GetComponentStorage<InputComponent>();
+            for (int i = 0; i < componentStorage.mStorage.size(); i++)
+            {
+                if (componentStorage.mValid[i] != 0)
+                {
+                    auto storage = componentStorage.mStorage[i];
+                    storage.lastKeydown = storage.keydown;
+                    if (event->is<sf::Event::KeyPressed>())
+                    {
+                        storage.keydown.set((size_t)keyReleased->scancode, true);
+                    }
+                    else if (event->is<sf::Event::KeyReleased>())
+                    {
+                        storage.keydown.set((size_t)keyReleased->scancode, false);
+                    }
+                }
+            }
+        }
+    }
     return true;
 }
 
