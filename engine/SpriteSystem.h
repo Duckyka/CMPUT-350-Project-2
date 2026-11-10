@@ -21,7 +21,21 @@ public:
         return name;
     }
 
-    tSystemReturn Run(EngineView<Components...>* engine) override { return kContinue; }
+    tSystemReturn Run(EngineView<Components...>* engine) override
+    {
+        auto spriteStorage = engine->GetEntityManager().template GetComponentStorage<SpriteComponent>();
+        for (int i = 0; i < spriteStorage.mStorage.size(); i++)
+        {
+            if (spriteStorage.mValid[i] != 0)
+            {
+                SpriteComponent sprite = spriteStorage.mStorage[i];
+                sf::Sprite sprite = engine->GetSpriteManager().GetSprite(sprite.textureID);
+                engine->GetWindowManager().GetWindow()->draw(sprite);
+            }
+        }
+
+        return kContinue;
+    }
 };
 
 }  // namespace ECSEngine
