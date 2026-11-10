@@ -19,13 +19,13 @@ public:
             {
                 ScoreComponent scoreStorage = componentStorage.mStorage[i];
                 int score = scoreStorage.score;
-                int digit1 = (score/(pow(10,3-1))%10);
+                int digit1 = ((int)(score/(pow(10,3-1)))%10);
                 scoreStorage.digitID[2] = scoreStorage.digitTextureID[digit1];
 
-                int digit2 = (score/(pow(10,2-1))%10);
+                int digit2 = ((int)(score/(pow(10,2-1)))%10);
                 scoreStorage.digitID[1] = scoreStorage.digitTextureID[digit2];
 
-                int digit3 = (score/(pow(10,1-1))%10);
+                int digit3 = ((int)(score/(pow(10,1-1)))%10);
                 scoreStorage.digitID[0] = scoreStorage.digitTextureID[digit3];
             }
         }

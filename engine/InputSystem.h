@@ -30,7 +30,7 @@ public:
                 std::bitset<sf::Keyboard::ScancodeCount> lastKeydown = componentStorage.mStorage[i].lastKeydown;
                 EntityID entity = componentStorage.mStorage[i].entity;
 
-                auto locationComponent = engine->GetEntityManager().template GetComponentStorage<LocationComponent>();
+                auto locationComponent = engine->GetEntityManager().template GetComponentStorage<MovementComponent>();
                 MovementComponent mMovementComp = locationComponent.mStorage[entity];
                 // if
                 // mMovementComp.velocity

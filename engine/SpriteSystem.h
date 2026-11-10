@@ -29,8 +29,8 @@ public:
             if (spriteStorage.mValid[i] != 0)
             {
                 SpriteComponent sprite = spriteStorage.mStorage[i];
-                sf::Sprite sprite = engine->GetSpriteManager().GetSprite(sprite.textureID);
-                engine->GetWindowManager().GetWindow()->draw(sprite);
+                sf::Sprite spriteObject = engine->GetSpriteManager().GetSprite(sprite.textureID);
+                engine->GetWindowManager().GetWindow()->draw(spriteObject);
             }
         }
 
