@@ -10,7 +10,27 @@ public:
         return name;
     }
 
-    tSystemReturn Run(EngineView<Components...>* engine) override { return kContinue; }
+    tSystemReturn Run(EngineView<Components...>* engine) override
+    {
+        auto componentStorage = engine->GetEntityManager().template GetComponentStorage<ScoreComponent>();
+        for (int i = 0; i < componentStorage.mStorage.size(); i++)
+        {
+            if (componentStorage.mValid[i] != 0)
+            {
+                ScoreComponent scoreStorage = componentStorage.mStorage[i];
+                int score = scoreStorage.score;
+                int digit1 = ((int)(score/(pow(10,3-1)))%10);
+                scoreStorage.digitID[2] = scoreStorage.digitTextureID[digit1];
+
+                int digit2 = ((int)(score/(pow(10,2-1)))%10);
+                scoreStorage.digitID[1] = scoreStorage.digitTextureID[digit2];
+
+                int digit3 = ((int)(score/(pow(10,1-1)))%10);
+                scoreStorage.digitID[0] = scoreStorage.digitTextureID[digit3];
+            }
+        }
+        return kContinue;
+    }
 };
 
 }  // namespace ECSEngine

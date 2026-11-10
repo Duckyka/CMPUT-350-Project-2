@@ -19,7 +19,26 @@ public:
         return name;
     }
 
-    tSystemReturn Run(EngineView<Components...>* engine) override { return kContinue; }
+    tSystemReturn Run(EngineView<Components...>* engine) override
+    {
+        auto componentStorage = engine->GetEntityManager().template GetComponentStorage<InputComponent>();
+        for (int i = 0; i < componentStorage.mStorage.size(); i++)
+        {
+            if (componentStorage.mValid[i] != 0)
+            {
+                std::bitset<sf::Keyboard::ScancodeCount> keydown = componentStorage.mStorage[i].keydown;
+                std::bitset<sf::Keyboard::ScancodeCount> lastKeydown = componentStorage.mStorage[i].lastKeydown;
+                EntityID entity = componentStorage.mStorage[i].entity;
+
+                auto locationComponent = engine->GetEntityManager().template GetComponentStorage<MovementComponent>();
+                MovementComponent mMovementComp = locationComponent.mStorage[entity];
+                // if
+                // mMovementComp.velocity
+
+            }
+        }
+        return kContinue;
+    }
 };
 
 }  // namespace ECSEngine

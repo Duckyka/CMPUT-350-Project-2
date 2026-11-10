@@ -10,7 +10,18 @@ public:
         return name;
     }
 
-    tSystemReturn Run(EngineView<Components...>* engine) override { return kContinue; }
+    tSystemReturn Run(EngineView<Components...>* engine) override
+    {
+        auto componentStorage = engine->GetEntityManager().template GetComponentStorage<CollisionComponent>();
+        for (int i = 0; i < componentStorage.mStorage.size(); i++)
+        {
+            if (componentStorage.mValid[i] != 0)
+            {
+                componentStorage.mStorage[i].previousCollisionBox = componentStorage.mStorage[i].collisionBox;
+            }
+        }
+        return kContinue;
+    }
 };
 
 }  // namespace ECSEngine
