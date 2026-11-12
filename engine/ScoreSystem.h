@@ -2,6 +2,8 @@
 
 namespace ECSEngine {
 
+/// @brief For all valid ScoreComponents, takes the current score in data and sets each sprite to the correct digit respectively. 
+/// @tparam ...Components 
 template <typename... Components>
 class ScoreSystem : public System<Components...> {
 public:
