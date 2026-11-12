@@ -19,6 +19,10 @@ template <typename... Components>
 class EntityManager {
 public:
     static constexpr size_t kNullComponent = std::numeric_limits<size_t>::max();
+
+    /// @brief Creates a new entity of type Component and finds the earliest available spot in the list for this entity to reside in. 
+    /// @param name 
+    /// @return Returns the index in the mEntities list, AKA an entityID for the newly created entity. 
     [[nodiscard]] EntityID CreateEntity(const std::string& name)
     {
         size_t pos = 0;
@@ -42,13 +46,21 @@ public:
         return pos;
     }
 
+    /// @brief Removes the given entity and sets its state to invalid for future checks. Assumes the entity exists. 
+    /// @param entity 
     void RemoveEntity(EntityID entity)
     {
+        assert(mEntities.at(entity).mID != kNullComponent);
         mEntityTracker.at(entity) = 0;
         mEntities.at(entity).mID = kNullComponent;
         mEntityNames.at(entity) = kNullComponent;
     }
 
+    /// @brief Given an entityID and a component of type T, adds this component to the entity. Assumes the entity does not already 
+    ///        have this component type. 
+    /// @tparam T 
+    /// @param entity 
+    /// @param component 
     template <typename T>
     void AddComponent(EntityID entity, T component)
     {
@@ -56,15 +68,21 @@ public:
         std::get<T>(mComponents)->mStorage[entity] = component;
     }
 
+    /// @brief Given an entityID, removes the component associated with that entity of type T. Assumes the entity is valid and has said component. 
+    /// @tparam T 
+    /// @param entity 
     template <typename T>
     void RemoveComponent(EntityID entity)
     {
         assert(mEntityTracker.at(entity) != 0 && HasComponent<T>(entity)); //Valid Entity
-        //std::get<T>(mComponents)[entity]->mFreeList.push_back(entity);
         std::get<T>(mComponents)->mValid[entity] = 0;
         std::get<T>(mComponents)->mStorage[entity] = kNullComponent;
     }
 
+    /// @brief Returns true or false depending on if the entity at entityID has the component type T. Assumes the entity is valid. 
+    /// @tparam T 
+    /// @param entity 
+    /// @return Returns true if the entity has a component of type T. Returns false if not. 
     template <typename T>
     bool HasComponent(EntityID entity) const
     {
@@ -83,6 +101,10 @@ public:
         }
     }
 
+    /// @brief Returns a reference to the component of type T given an entityID. Assumes the entity has said component type. 
+    /// @tparam T 
+    /// @param entity 
+    /// @return Returns a reference to the component of type T. 
     template <typename T>
     T& GetComponent(EntityID entity) {
         // Re-write code
@@ -91,6 +113,9 @@ public:
         return component;
     }
 
+    /// @brief Returns a reference to the componentStorage of component type T. 
+    /// @tparam T 
+    /// @return ComponentStorage of type T. 
     template <typename T>
     ComponentStorage<T>& GetComponentStorage() {
         // Re-write code

@@ -67,6 +67,9 @@ ECSEngine<Components...>::ECSEngine(unsigned int width, unsigned int height,
 template <typename... Components>
 ECSEngine<Components...>::~ECSEngine() {}
 
+/// @brief The main game engine loop, processes events like key inputs, calls Run() on the systemManager, and displays the window. 
+///        Has the option to toggle debug mode or pause the current loop as well. 
+/// @tparam ...Components 
 template <typename... Components>
 void ECSEngine<Components...>::Run()
 {
@@ -93,6 +96,10 @@ void ECSEngine<Components...>::Run()
     }
 }
 
+/// @brief Gets key input and updates the inputComponent's bitmaps for keys pressed and released this frame. 
+///        Can toggle debug mode with F3 and pause the game loop with F4. 
+/// @tparam ...Components 
+/// @return Returns a bool. If true, continue the game loop. If false, the window was closed and the game will stop. 
 template <typename... Components>
 bool ECSEngine<Components...>::ProcessEvents() {
     while(const std::optional<sf::Event> event = mWindowManager.GetWindow()->pollEvent())

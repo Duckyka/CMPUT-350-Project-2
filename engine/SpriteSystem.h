@@ -13,6 +13,8 @@
 
 namespace ECSEngine {
 
+/// @brief For all valid SpriteComponents, gets the corresponding sprite texture based off of the spriteComponent and draws this to the window. 
+/// @tparam ...Components 
 template <typename... Components>
 class SpriteSystem : public System<Components...> {
 public:

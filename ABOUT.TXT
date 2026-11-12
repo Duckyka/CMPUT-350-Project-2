@@ -1,0 +1,4 @@
+This implementation was done by Kieran Alexander (all managers, components, systems, and gameplay behaviour). 
+
+No AI was used for this project. 
+No external code sources were used for this project. 

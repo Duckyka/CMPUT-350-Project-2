@@ -3,6 +3,9 @@
 namespace ECSEngine
 {
 
+/// @brief For each valid GravityComponent, applies downward gravity acceleration to the object with the corresponding gravityComponent if
+///        said object is not already on the ground, determined by collisions. 
+/// @tparam ...Components 
 template <typename... Components>
 class GravitySystem : public System<Components...> {
 public:
