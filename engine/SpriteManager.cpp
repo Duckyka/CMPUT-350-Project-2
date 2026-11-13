@@ -14,7 +14,7 @@ SpriteID SpriteManager::RegisterTexture(const std::string& texturePath, const Re
     if (seen_string != mTextures.end())
     {
         sf::Sprite sprite(seen_string->second);
-        sprite.setTextureRect(sf::IntRect({sourceRect.topLeft.x, sourceRect.topLeft.y}, {sourceRect.width, sourceRect.height}));
+        sprite.setTextureRect(sf::IntRect({static_cast<int>(sourceRect.topLeft.x), static_cast<int>(sourceRect.topLeft.y)}, {static_cast<int>(sourceRect.width), static_cast<int>(sourceRect.height)}));  //compile error
         mSprites.push_back(sprite);
         return mSprites.size() - 1;
     }
@@ -23,8 +23,9 @@ SpriteID SpriteManager::RegisterTexture(const std::string& texturePath, const Re
         sf::Texture texture(texturePath);
         mTextures.insert({texturePath, texture});
 
-        sf::Sprite sprite(seen_string->second);
-        sprite.setTextureRect(sf::IntRect({sourceRect.topLeft.x, sourceRect.topLeft.y}, {sourceRect.width, sourceRect.height}));
+        //sf::Sprite sprite(seen_string->second);
+        sf::Sprite sprite(mTextures.at(texturePath)); //texture not found error
+        sprite.setTextureRect(sf::IntRect({static_cast<int>(sourceRect.topLeft.x), static_cast<int>(sourceRect.topLeft.y)}, {static_cast<int>(sourceRect.width), static_cast<int>(sourceRect.height)}));  //compile error
         mSprites.push_back(sprite);
         return mSprites.size() - 1;
     }
