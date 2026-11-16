@@ -13,22 +13,34 @@ public:
     }
 
     tSystemReturn Run(EngineView<Components...>* engine) override
-    {
-        auto componentStorage = engine->GetEntityManager().template GetComponentStorage<ScoreComponent>();
-        for (int i = 0; i < componentStorage.mStorage.size(); i++)
+    {   
+        auto& entityManager = engine->GetEntityManager(); // get the entity manager
+        auto& componentStorage = entityManager.template GetComponentStorage<ScoreComponent>(); //get scores
+        auto& sprites = entityManager.template GetComponentStorage<SpriteComponent>(); //get sprites
+        for (size_t i = 0; i < componentStorage.mStorage.size(); i++) //loop through scores
         {
-            if (componentStorage.mValid[i] != 0)
+            if (componentStorage.mValid[i] != 0) //check valid score
             {
-                ScoreComponent scoreStorage = componentStorage.mStorage[i];
-                int score = scoreStorage.score;
-                int digit1 = ((int)(score/(pow(10,3-1)))%10);
-                scoreStorage.digitID[2] = scoreStorage.digitTextureID[digit1];
+                ScoreComponent& scoreStorage = componentStorage.mStorage[i];
+                int score = scoreStorage.score;  //get current score
 
-                int digit2 = ((int)(score/(pow(10,2-1)))%10);
-                scoreStorage.digitID[1] = scoreStorage.digitTextureID[digit2];
+                int digit1 = ((int)(score/(pow(10,3-1)))%10); //get hundreds digit
+                EntityID id = scoreStorage.digitID[2]; //get sprite id 
+                if (id < sprites.mValid.size() && sprites.mValid[id]) { //check valid sprite
+                    sprites.mStorage[id].textureID = scoreStorage.digitTextureID[digit1]; //update digit
+                }
 
-                int digit3 = ((int)(score/(pow(10,1-1)))%10);
-                scoreStorage.digitID[0] = scoreStorage.digitTextureID[digit3];
+                int digit2 = ((int)(score/(pow(10,2-1)))%10);  //get tens digit
+                id = scoreStorage.digitID[1]; //get sprite id
+                if (id < sprites.mValid.size() && sprites.mValid[id]) { //check valid sprite
+                    sprites.mStorage[id].textureID =scoreStorage.digitTextureID[digit2]; //update digit
+                }
+                
+                int digit3 = ((int)(score/(pow(10,1-1)))%10);  //get ones digit
+                id = scoreStorage.digitID[0];//get sprite id
+                if (id < sprites.mValid.size() && sprites.mValid[id]) { //check valid sprite
+                    sprites.mStorage[id].textureID = scoreStorage.digitTextureID[digit3]; //update digit
+                }
             }
         }
         return kContinue;
