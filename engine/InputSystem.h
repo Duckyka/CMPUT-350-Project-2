@@ -30,8 +30,8 @@ public:
 
     tSystemReturn Run(EngineView<Components...>* engine) override
     {
-        auto componentStorage = engine->GetEntityManager().template GetComponentStorage<InputComponent>();
-        for (int i = 0; i < componentStorage.mStorage.size(); i++)
+        auto& componentStorage = engine->GetEntityManager().template GetComponentStorage<InputComponent>();
+        for (size_t i = 0; i < componentStorage.mStorage.size(); i++)
         {
             if (componentStorage.mValid[i] != 0)
             {
@@ -42,7 +42,8 @@ public:
                 auto locationComponent = engine->GetEntityManager().template GetComponentStorage<MovementComponent>();
                 MovementComponent mMovementComp = locationComponent.mStorage[entity];
                 auto collisionComponent = engine->GetEntityManager().template GetComponentStorage<CollisionComponent>();
-                CollisionComponent mCollisionComp = collisionComponent.mStorage[entity];
+                CollisionComponent mCollisionComp = collisionComponent.mStorage[entity];             
+
                 if (keydown[Key::Left] == true && keydown[Key::Right] == false)
                 {
                     if (mCollisionComp.onGround)

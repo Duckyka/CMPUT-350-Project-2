@@ -16,16 +16,17 @@ public:
     /// @return tSystemReturn state
     tSystemReturn Run(EngineView<Components...>* engine) override
     {
-        auto componentStorage = engine->GetEntityManager().template GetComponentStorage<CollisionComponent>();
-        for (int i = 0; i < componentStorage.mStorage.size(); i++)
+        auto& componentStorage = engine->GetEntityManager().template GetComponentStorage<CollisionComponent>();
+        auto& locations = engine->GetEntityManager().template GetComponentStorage<LocationComponent>();
+        //copy the collision box and adds the entity's position to it.
+        for (size_t i = 0; i < componentStorage.mStorage.size(); i++) //loops through all collision components
         {
-            if (componentStorage.mValid[i] != 0)
-            {
-                componentStorage.mStorage[i].previousCollisionBox = componentStorage.mStorage[i].collisionBox;
-            }
+            if (componentStorage.mValid[i] != 0 && i < locations.mValid.size() && locations.mValid[i] != 0) { //if both exist, update collision box
+                componentStorage.mStorage[i].previousCollisionBox = componentStorage.mStorage[i].collisionBox; 
+                componentStorage.mStorage[i].previousCollisionBox.topLeft.x += locations.mStorage[i].loc.x; 
+                componentStorage.mStorage[i].previousCollisionBox.topLeft.y += locations.mStorage[i].loc.y; } 
         }
-        return kContinue;
-    }
+        return kContinue; }
 };
 
 }  // namespace ECSEngine

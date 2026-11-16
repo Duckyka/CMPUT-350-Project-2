@@ -1,5 +1,6 @@
 #include <cstdint>
 #include "WindowManager.h"
+#include <algorithm>
 
 namespace ECSEngine {
 
@@ -8,7 +9,7 @@ namespace ECSEngine {
 /// @param height 
 /// @param title 
 WindowManager::WindowManager(unsigned int width, unsigned int height, const std::string& title)
-    : mWindow(std::make_shared<sf::RenderWindow>(sf::VideoMode({width, height}), title)) {}
+: mWindow(std::make_shared<sf::RenderWindow>(sf::VideoMode({width, height}), title)), mWorldCenter(0.f, 0.f), mWorldUnitsPerPixel(1.f) {}
 
 /// @brief Gets the RenderWindow stored in mWindow. 
 /// @return Returns a shared pointer to a renderWindow. 
@@ -16,7 +17,8 @@ std::shared_ptr<sf::RenderWindow> WindowManager::GetWindow() const { return mWin
 
 /// @brief Gets the window bounds of the stored mWindow. 
 /// @return Returns a Rect made up of mWindow (x, y) size. 
-Rect WindowManager::GetWindowBounds() const { return Rect(mWindow->getSize().x, mWindow->getSize().y); }
+//Rect WindowManager::GetWindowBounds() const { return Rect(mWindow->getSize().x, mWindow->getSize().y); } camera.h
+Rect WindowManager::GetWindowBounds() const {return Rect{{0.f, 0.f}, static_cast<float>(mWindow->getSize().x), static_cast<float>(mWindow->getSize().y)}; }
 
 /// @brief Given a Rect of width and height, draws a rectangle to the window with a fill colour made up of the given RGBA value. 
 /// @param r 
@@ -46,6 +48,7 @@ void WindowManager::DebugFrameRect(const Rect& r, int red, int green, int blue, 
     rect.setSize({r.width, r.height});
     rect.setFillColor(sf::Color{1, 1, 1, 0});
     rect.setOutlineColor(sf::Color{static_cast<std::uint8_t>(red), static_cast<std::uint8_t>(green), static_cast<std::uint8_t>(blue), static_cast<std::uint8_t>(alpha)});  //compile error
+    rect.setOutlineThickness(1.f); //missing thickness
     rect.setPosition({r.topLeft.x, r.topLeft.y});
     mWindow->draw(rect);
 }
@@ -121,6 +124,17 @@ void WindowManager::SetWorldRect(const Rect& worldCameraRect)
     cameraCenter.x += worldCameraRect.width * 0.5f;
     cameraCenter.y += worldCameraRect.height * 0.5f;
     SetWorldCenter(cameraCenter);
+    const auto size = mWindow->getSize();
+
+    if (worldCameraRect.width > 0.f &&
+        worldCameraRect.height > 0.f &&
+        size.x > 0 && size.y > 0) {
+
+        SetWorldScale(std::max(
+            worldCameraRect.width / static_cast<float>(size.x),
+            worldCameraRect.height / static_cast<float>(size.y)
+        ));
+    }
 }
 
 /// @brief Given a float x, converts this value, given in window units, to world units. 

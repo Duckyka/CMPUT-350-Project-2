@@ -18,6 +18,7 @@ void SoundManager::RegisterSound(const std::string& soundPath, const std::string
     {
         sf::SoundBuffer soundBuffer(soundPath);
         mSounds.insert({soundName, soundBuffer});
+        mSoundInstances.try_emplace(soundName, mSounds.at(soundName));
     }
 }
 
@@ -25,8 +26,7 @@ void SoundManager::RegisterSound(const std::string& soundPath, const std::string
 /// @param soundName 
 /// @return Returns the sound after it is played. 
 sf::Sound& SoundManager::GetSound(const std::string& soundName) {
-    static sf::SoundBuffer soundBuffer = mSounds[soundName];
-    static sf::Sound sound(soundBuffer);
+    auto& sound = mSoundInstances.at(soundName);
     sound.play();
     return sound;
 }

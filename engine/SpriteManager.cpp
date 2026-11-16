@@ -22,8 +22,6 @@ SpriteID SpriteManager::RegisterTexture(const std::string& texturePath, const Re
     {
         sf::Texture texture(texturePath);
         mTextures.insert({texturePath, texture});
-
-        //sf::Sprite sprite(seen_string->second);
         sf::Sprite sprite(mTextures.at(texturePath)); //texture not found error
         sprite.setTextureRect(sf::IntRect({static_cast<int>(sourceRect.topLeft.x), static_cast<int>(sourceRect.topLeft.y)}, {static_cast<int>(sourceRect.width), static_cast<int>(sourceRect.height)}));  //compile error
         mSprites.push_back(sprite);

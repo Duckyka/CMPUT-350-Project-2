@@ -2,20 +2,21 @@
 
 #include <bitset>
 #include <unordered_map>
-
+#include <chrono>
 #include "MathUtil.h"
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Window/Keyboard.hpp>
+#include "Keyboard.h"
 
 namespace ECSEngine {
 
 struct InputComponent {
-    InputComponent(EntityID whichEntity) : entity(whichEntity), lastDash(0) {}
+    InputComponent(EntityID whichEntity): entity(whichEntity), lastDash() {}
     EntityID entity;
-    int lastDash;
-    std::bitset<sf::Keyboard::ScancodeCount> keydown;
-    std::bitset<sf::Keyboard::ScancodeCount> lastKeydown;
+    std::chrono::steady_clock::time_point lastDash;
+    std::bitset<Key::ScanCount> keydown;
+    std::bitset<Key::ScanCount> lastKeydown;
 };
 
 }  // namespace ECSEngine
