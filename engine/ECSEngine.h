@@ -60,9 +60,10 @@ private:
 };
 
 template <typename... Components>
-ECSEngine<Components...>::ECSEngine(unsigned int width, unsigned int height,
-                                    const std::string& name)
-    : mWindowManager(width, height, name), running(true), step(false), debug(0) {}
+ECSEngine<Components...>::ECSEngine(unsigned int width, unsigned int height, const std::string& name)
+    : mWindowManager(width, height, name), running(true), step(false), debug(0) {
+        mWindowManager.GetWindow()->setKeyRepeatEnabled(false);
+}
 
 template <typename... Components>
 ECSEngine<Components...>::~ECSEngine() {}
@@ -79,20 +80,20 @@ void ECSEngine<Components...>::Run()
         {
             break;
         }
-
         if (!step)
         {
-            mSystemManager.Run(this);
+            mWindowManager.GetWindow()->clear(); // clear the previous frame
+
+            if (!mSystemManager.Run(this)) {
+                running = false;
+                break;
+            }
+
+            if (debug != 0) {
+                DebugDraw();
+            }
+            mWindowManager.GetWindow()->display();
         }
-
-        mWindowManager.GetWindow()->clear();
-
-        if (debug != 0)
-        {
-            DebugDraw();
-        }
-
-        mWindowManager.GetWindow()->display();
     }
 }
 
@@ -102,6 +103,12 @@ void ECSEngine<Components...>::Run()
 /// @return Returns a bool. If true, continue the game loop. If false, the window was closed and the game will stop. 
 template <typename... Components>
 bool ECSEngine<Components...>::ProcessEvents() {
+    auto& inputs = mEntityManager.template GetComponentStorage<InputComponent>();
+    for (size_t i = 0; i < inputs.mStorage.size(); ++i) {
+        if (i < inputs.mValid.size() && inputs.mValid[i]) {
+            inputs.mStorage[i].lastKeydown = inputs.mStorage[i].keydown;
+        }
+    }
     while(const std::optional<sf::Event> event = mWindowManager.GetWindow()->pollEvent())
     {
         if (event->is<sf::Event::Closed>())
@@ -109,33 +116,20 @@ bool ECSEngine<Components...>::ProcessEvents() {
             mWindowManager.GetWindow()->close();
             return false;
         }
-
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::F3))
-        {
-            if (debug == 0) { debug = 1; }
-            else { debug = 0; }
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::F4))
-        {
-            step = !step;
-        }
-
-        if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
-        {
+        if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+            if (keyPressed->scancode == sf::Keyboard::Scancode::F3)
+                debug = !debug;
+            if (keyPressed->scancode == sf::Keyboard::Scancode::F4)
+                step = !step;
             auto& componentStorage = mEntityManager.template GetComponentStorage<InputComponent>();
-            for (int i = 0; i < componentStorage.mStorage.size(); i++)
+            for (size_t i = 0; i < componentStorage.mStorage.size(); i++)
             {
                 if (componentStorage.mValid[i] != 0)
                 {
-                    auto storage = componentStorage.mStorage[i];
-                    storage.lastKeydown = storage.keydown;
-                    if (event->is<sf::Event::KeyPressed>())
-                    {
-                        storage.keydown.set((size_t)keyPressed->scancode, true);
-                    }
-                    else if (event->is<sf::Event::KeyReleased>())
-                    {
-                        storage.keydown.set((size_t)keyPressed->scancode, false);
+                    auto& storage = componentStorage.mStorage[i];
+                    const size_t key = static_cast<size_t>(keyPressed->scancode);
+                    if (key < storage.keydown.size()) {
+                        storage.keydown.set(key);
                     }
                 }
             }
@@ -143,25 +137,19 @@ bool ECSEngine<Components...>::ProcessEvents() {
         else if (const auto* keyReleased = event->getIf<sf::Event::KeyReleased>())
         {
             auto& componentStorage = mEntityManager.template GetComponentStorage<InputComponent>();
-            for (int i = 0; i < componentStorage.mStorage.size(); i++)
+            for (size_t i = 0; i < componentStorage.mStorage.size(); i++)
             {
-                if (componentStorage.mValid[i] != 0)
-                {
-                    auto storage = componentStorage.mStorage[i];
-                    storage.lastKeydown = storage.keydown;
-                    if (event->is<sf::Event::KeyPressed>())
-                    {
-                        storage.keydown.set((size_t)keyReleased->scancode, true);
+                if (componentStorage.mValid[i] != 0) {
+                    const size_t key = static_cast<size_t>(keyReleased->scancode);
+                    auto& storage = componentStorage.mStorage[i];
+                    if (key < storage.keydown.size()) {
+                        storage.keydown.reset(key); 
                     }
-                    else if (event->is<sf::Event::KeyReleased>())
-                    {
-                        storage.keydown.set((size_t)keyReleased->scancode, false);
-                    }
+     
                 }
             }
         }
-    }
-    return true;
+    return true;}
 }
 
 template <typename... Components>
