@@ -15,6 +15,7 @@ public:
 
 private:
     std::unordered_map<std::string, sf::SoundBuffer> mSounds;
+    std::unordered_map<std::string, sf::Sound> mSoundInstances;
 };
 
 }  // namespace ECSEngine

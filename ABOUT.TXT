@@ -1,4 +1,19 @@
-This implementation was done by Kieran Alexander (all managers, components, systems, and gameplay behaviour). 
+This implementation was done by Kieran Alexander and Zaima Masaba (all managers, components, systems, and gameplay behaviour). 
 
-No AI was used for this project. 
 No external code sources were used for this project. 
+
+AI DIsclosure for platform/main.cpp
+
+Prompt:"Here are all files i implemented so far and empty main.cpp: Load Both Maps and Finish Gameplay Integration.
+Requirements:
+- Implement dictionary types 1 and 2 without changing the existing map layouts.
+- Create terrain, player, spawner, and extra test star entities.
+- Register required assets and sounds.
+- Set up the camera and upper-left score display.
+- Connect landing, jumping, wall, and star collection sounds.
+- Integrate faster falling, variable jumps, wall slides, wall jumps, dashing, and spike-wall traversal.
+- Make sure both maps load correctly. The first wall must be traversable by jumping and the second must require dashing.
+Review the existing code and identify only missing implementations, bugs, or necessary corrections. Preserve existing code as much as possible. Do not rewrite working systems or suggest optional improvements. Provide only the necessary C++ code snippets, Be direct, concise, and explain why each correction is required."
+
+Reflection: AI was used to help develop and review the gameplay integration, including loading both map dictionary formats, creating game entities, registering sprites and sounds, and connecting gameplay sound events. I inserted the provided code snippets into `main.cpp`. This saved time because I was behind schedule and helped me better understand how the map files, components, managers, and systems work together. However, the AI-generated code still required careful review because it could make incorrect assumptions about existing interfaces, sprite coordinates, and gameplay behaviour. I focused on preserving my teammates' existing code and limiting changes to missing functionality and necessary corrections. However I had to spend many hours finding bugs and trying to fix them.
+

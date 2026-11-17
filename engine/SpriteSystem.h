@@ -25,19 +25,31 @@ public:
 
     tSystemReturn Run(EngineView<Components...>* engine) override
     {
-        auto spriteStorage = engine->GetEntityManager().template GetComponentStorage<SpriteComponent>();
-        for (int i = 0; i < spriteStorage.mStorage.size(); i++)
+        auto& entityManager = engine->GetEntityManager(); // get the entity manager
+        auto& spriteStorage = entityManager.template GetComponentStorage<SpriteComponent>();
+        auto& locations = entityManager.template  GetComponentStorage<LocationComponent>();
+        auto& window = engine->GetWindowManager();
+        
+        for (size_t i = 0; i < spriteStorage.mStorage.size(); i++)
         {
-            if (spriteStorage.mValid[i] != 0)
-            {
-                SpriteComponent sprite = spriteStorage.mStorage[i];
+            if (spriteStorage.mValid[i] != 0) {
+                SpriteComponent& sprite = spriteStorage.mStorage[i];
                 sf::Sprite spriteObject = engine->GetSpriteManager().GetSprite(sprite.textureID);
-                engine->GetWindowManager().GetWindow()->draw(spriteObject);
-            }
-        }
-
-        return kContinue;
-    }
+                Rect bounds = sprite.bounds;  //copy box
+                if (i < locations.mValid.size() && locations.mValid[i]) {  //if location valid
+                    bounds.topLeft.x += locations.mStorage[i].loc.x;    //add x coord
+                    bounds.topLeft.y += locations.mStorage[i].loc.y;    //add y coord
+                }
+                if (sprite.worldSpace) { //if in world
+                    bounds = window.WorldToWindow(bounds); //convert coords to world
+                }
+                const auto local = spriteObject.getLocalBounds(); //get sprite bounds
+                if (local.size.x <= 0.f || local.size.y <= 0.f) continue; //if invalid, skip
+                spriteObject.setPosition(sf::Vector2f(bounds.topLeft.x, bounds.topLeft.y)); //set pos of sprite
+                spriteObject.setScale(sf::Vector2f(bounds.width / local.size.x, bounds.height / local.size.y)); //scale sprite
+                window.GetWindow()->draw(spriteObject); //draw sprite
+            } } 
+    return kContinue; }
 };
 
 }  // namespace ECSEngine

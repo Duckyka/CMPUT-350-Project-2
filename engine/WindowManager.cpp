@@ -1,4 +1,6 @@
+#include <cstdint>
 #include "WindowManager.h"
+#include <algorithm>
 
 namespace ECSEngine {
 
@@ -7,7 +9,7 @@ namespace ECSEngine {
 /// @param height 
 /// @param title 
 WindowManager::WindowManager(unsigned int width, unsigned int height, const std::string& title)
-    : mWindow(std::make_shared<sf::RenderWindow>(sf::VideoMode({width, height}), title)) {}
+: mWindow(std::make_shared<sf::RenderWindow>(sf::VideoMode({width, height}), title)), mWorldCenter(0.f, 0.f), mWorldUnitsPerPixel(1.f) {}
 
 /// @brief Gets the RenderWindow stored in mWindow. 
 /// @return Returns a shared pointer to a renderWindow. 
@@ -15,7 +17,8 @@ std::shared_ptr<sf::RenderWindow> WindowManager::GetWindow() const { return mWin
 
 /// @brief Gets the window bounds of the stored mWindow. 
 /// @return Returns a Rect made up of mWindow (x, y) size. 
-Rect WindowManager::GetWindowBounds() const { return Rect(mWindow->getSize().x, mWindow->getSize().y); }
+//Rect WindowManager::GetWindowBounds() const { return Rect(mWindow->getSize().x, mWindow->getSize().y); } camera.h
+Rect WindowManager::GetWindowBounds() const {return Rect{{0.f, 0.f}, static_cast<float>(mWindow->getSize().x), static_cast<float>(mWindow->getSize().y)}; }
 
 /// @brief Given a Rect of width and height, draws a rectangle to the window with a fill colour made up of the given RGBA value. 
 /// @param r 
@@ -27,7 +30,7 @@ void WindowManager::DebugDrawRect(const Rect& r, int red, int green, int blue, i
 {
     sf::RectangleShape rect;
     rect.setSize({r.width, r.height});
-    rect.setFillColor(sf::Color{red, green, blue, alpha});
+    rect.setFillColor(sf::Color{static_cast<std::uint8_t>(red), static_cast<std::uint8_t>(green), static_cast<std::uint8_t>(blue), static_cast<std::uint8_t>(alpha)});  //compile error
     rect.setOutlineColor(sf::Color{1, 1, 1, 0});
     rect.setPosition({r.topLeft.x, r.topLeft.y});
     mWindow->draw(rect);
@@ -44,7 +47,8 @@ void WindowManager::DebugFrameRect(const Rect& r, int red, int green, int blue, 
     sf::RectangleShape rect;
     rect.setSize({r.width, r.height});
     rect.setFillColor(sf::Color{1, 1, 1, 0});
-    rect.setOutlineColor(sf::Color{red, green, blue, alpha});
+    rect.setOutlineColor(sf::Color{static_cast<std::uint8_t>(red), static_cast<std::uint8_t>(green), static_cast<std::uint8_t>(blue), static_cast<std::uint8_t>(alpha)});  //compile error
+    rect.setOutlineThickness(1.f); //missing thickness
     rect.setPosition({r.topLeft.x, r.topLeft.y});
     mWindow->draw(rect);
 }
@@ -54,9 +58,9 @@ void WindowManager::DebugFrameRect(const Rect& r, int red, int green, int blue, 
 /// @return Returns Rect in world coordinates. 
 Rect WindowManager::WindowToWorld(const Rect& rect) const
 {
-    return Rect((mWorldCenter.x - ((mWindow->getSize().x * 0.5f) * mWorldUnitsPerPixel) + (rect.topLeft.x * mWorldUnitsPerPixel),
-                 mWorldCenter.y - ((mWindow->getSize().y * 0.5f) * mWorldUnitsPerPixel) + (rect.topLeft.y * mWorldUnitsPerPixel)), 
-                 (rect.width * mWorldUnitsPerPixel, rect.height * mWorldUnitsPerPixel));
+    return Rect{{mWorldCenter.x - ((mWindow->getSize().x * 0.5f) * mWorldUnitsPerPixel) + (rect.topLeft.x * mWorldUnitsPerPixel),
+                 mWorldCenter.y - ((mWindow->getSize().y * 0.5f) * mWorldUnitsPerPixel) + (rect.topLeft.y * mWorldUnitsPerPixel)}, 
+                 rect.width * mWorldUnitsPerPixel, rect.height * mWorldUnitsPerPixel};
 }
 
 /// @brief Converts window coordinates to world coordinates, given a point2D. 
@@ -64,8 +68,8 @@ Rect WindowManager::WindowToWorld(const Rect& rect) const
 /// @return Returns Point2D in world coordinates. 
 Point2D WindowManager::WindowToWorld(const Point2D& pt) const
 {
-    return (mWorldCenter.x - ((mWindow->getSize().x * 0.5f) * mWorldUnitsPerPixel) + (pt.x * mWorldUnitsPerPixel), 
-            mWorldCenter.y - ((mWindow->getSize().y * 0.5f) * mWorldUnitsPerPixel) + (pt.y * mWorldUnitsPerPixel));
+    return {mWorldCenter.x - ((mWindow->getSize().x * 0.5f) * mWorldUnitsPerPixel) + (pt.x * mWorldUnitsPerPixel), 
+            mWorldCenter.y - ((mWindow->getSize().y * 0.5f) * mWorldUnitsPerPixel) + (pt.y * mWorldUnitsPerPixel)};
 }
 
 /// @brief Converts world coordinates to window coordinates, given a Rect. 
@@ -73,9 +77,9 @@ Point2D WindowManager::WindowToWorld(const Point2D& pt) const
 /// @return Returns Rect in window coordinates. 
 Rect WindowManager::WorldToWindow(const Rect& rect) const
 {
-    return Rect((((rect.topLeft.x - (mWorldCenter.x - ((mWindow->getSize().x * 0.5f) * mWorldUnitsPerPixel))) / mWorldUnitsPerPixel),
-                  (rect.topLeft.y - (mWorldCenter.y - ((mWindow->getSize().y * 0.5f) * mWorldUnitsPerPixel))) / mWorldUnitsPerPixel), 
-                  (rect.width / mWorldUnitsPerPixel, rect.height / mWorldUnitsPerPixel));
+    return Rect{{(rect.topLeft.x - (mWorldCenter.x - ((mWindow->getSize().x * 0.5f) * mWorldUnitsPerPixel))) / mWorldUnitsPerPixel,
+                  (rect.topLeft.y - (mWorldCenter.y - ((mWindow->getSize().y * 0.5f) * mWorldUnitsPerPixel))) / mWorldUnitsPerPixel}, 
+                  rect.width / mWorldUnitsPerPixel, rect.height / mWorldUnitsPerPixel};
 }
 
 /// @brief Converts world coordinates to window coordinates, given a Point2D. 
@@ -83,8 +87,8 @@ Rect WindowManager::WorldToWindow(const Rect& rect) const
 /// @return Returns Point2D in window coordinates. 
 Point2D WindowManager::WorldToWindow(const Point2D& pt) const
 {
-    return ((pt.x - (mWorldCenter.x - ((mWindow->getSize().x * 0.5f) * mWorldUnitsPerPixel))) / mWorldUnitsPerPixel, 
-            (pt.y - (mWorldCenter.y - ((mWindow->getSize().y * 0.5f) * mWorldUnitsPerPixel))) / mWorldUnitsPerPixel);
+    return {(pt.x - (mWorldCenter.x - ((mWindow->getSize().x * 0.5f) * mWorldUnitsPerPixel))) / mWorldUnitsPerPixel, 
+            (pt.y - (mWorldCenter.y - ((mWindow->getSize().y * 0.5f) * mWorldUnitsPerPixel))) / mWorldUnitsPerPixel};
 }
 
 /// @brief Sets the center of the camera in world coordinates given a world point and a screen point (in window coordinates). 
@@ -92,8 +96,8 @@ Point2D WindowManager::WorldToWindow(const Point2D& pt) const
 /// @param screenPt 
 void WindowManager::SetCamera(const Point2D& worldPt, const Point2D& screenPt)
 {
-    mWorldCenter = (worldPt.x - screenPt.x * mWorldUnitsPerPixel + mWindow->getSize().x * 0.5f * mWorldUnitsPerPixel,
-                    worldPt.y - screenPt.y * mWorldUnitsPerPixel + mWindow->getSize().y * 0.5f * mWorldUnitsPerPixel);
+    mWorldCenter = {worldPt.x - screenPt.x * mWorldUnitsPerPixel + mWindow->getSize().x * 0.5f * mWorldUnitsPerPixel,
+                    worldPt.y - screenPt.y * mWorldUnitsPerPixel + mWindow->getSize().y * 0.5f * mWorldUnitsPerPixel};
 }
 
 /// @brief Gets the center of the camera in world coordinates, stored in mWorldCenter. 
@@ -120,6 +124,17 @@ void WindowManager::SetWorldRect(const Rect& worldCameraRect)
     cameraCenter.x += worldCameraRect.width * 0.5f;
     cameraCenter.y += worldCameraRect.height * 0.5f;
     SetWorldCenter(cameraCenter);
+    const auto size = mWindow->getSize();
+
+    if (worldCameraRect.width > 0.f &&
+        worldCameraRect.height > 0.f &&
+        size.x > 0 && size.y > 0) {
+
+        SetWorldScale(std::max(
+            worldCameraRect.width / static_cast<float>(size.x),
+            worldCameraRect.height / static_cast<float>(size.y)
+        ));
+    }
 }
 
 /// @brief Given a float x, converts this value, given in window units, to world units. 
