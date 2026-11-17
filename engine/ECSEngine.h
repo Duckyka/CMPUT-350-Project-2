@@ -148,9 +148,10 @@ bool ECSEngine<Components...>::ProcessEvents() {
      
                 }
             }
-        }
-    return true;}
-}
+        } 
+    }
+    
+return true;}
 
 template <typename... Components>
 void ECSEngine<Components...>::DebugDraw() {}
